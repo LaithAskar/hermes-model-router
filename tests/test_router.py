@@ -1,6 +1,7 @@
 import unittest
 
 from hermes_router.approval import request_approval
+from hermes_router.hermes import run_approved
 from hermes_router.router import Router, TaskKind, classify, default_profiles
 
 
@@ -43,6 +44,32 @@ class RouterTests(unittest.TestCase):
         result = request_approval(d, "openai-codex", "gpt-5.6-sol", input_fn=lambda _: "")
         self.assertFalse(result.approved)
         self.assertIn("staying on", result.message)
+
+    def test_denied_route_never_runs_hermes(self):
+        d = self.router.route("Fix a bug", TaskKind.CODING)
+        calls = []
+        result = run_approved(d, "Fix a bug", approved=False, hermes_bin="/usr/bin/hermes", runner=lambda *a, **k: calls.append(a))
+        self.assertFalse(result.approved)
+        self.assertEqual(calls, [])
+
+    def test_approved_route_uses_argv_without_shell(self):
+        d = self.router.route("Fix a bug; do not execute shell", TaskKind.CODING)
+        seen = {}
+
+        class Completed:
+            returncode = 0
+            stdout = "ok"
+            stderr = ""
+
+        def fake_runner(command, **kwargs):
+            seen["command"] = command
+            seen["kwargs"] = kwargs
+            return Completed()
+
+        result = run_approved(d, "Fix a bug; do not execute shell", approved=True, hermes_bin="/usr/bin/hermes", runner=fake_runner)
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(seen["command"][0], "/usr/bin/hermes")
+        self.assertFalse(seen["kwargs"].get("shell", False))
 
 
 if __name__ == "__main__":

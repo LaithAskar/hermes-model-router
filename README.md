@@ -36,6 +36,8 @@ The output is JSON containing the selected provider and model. A future Hermes i
 
 With `--ask`, the router presents the proposed destination and defaults to **deny**. The MVP does not edit Hermes configuration, restart the gateway, or switch a live session. An integration must perform that side effect only after receiving `approved: true`.
 
+The first execution adapter is intentionally conservative: after approval it starts a **new bounded `hermes chat` process** with an argv list (`shell=False`). It does not rewrite `~/.hermes/config.yaml` and does not hot-swap an existing conversation. Native live-session switching is a later adapter using Hermes' TUI gateway `command.dispatch` protocol, with the same approval gate.
+
 ## Recommended architecture
 
 ```text
