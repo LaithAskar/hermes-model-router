@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hermes-model-router"
-version = "0.1.0"
+version = "0.2.0"
 description = "Cost-aware task routing for Hermes Agent"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -14,6 +14,9 @@ dependencies = []
 
 [project.scripts]
 hermes-route = "hermes_router.cli:main"
+
+[project.entry-points."hermes_agent.plugins"]
+hermes-model-router = "hermes_router.plugin"
 
 [tool.setuptools.packages.find]
 include = ["hermes_router*"]

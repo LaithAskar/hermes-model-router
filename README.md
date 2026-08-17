@@ -32,7 +32,7 @@ python3 -m hermes_router.cli \
   --current-model google/gemini-3.7-flash
 ```
 
-The output is JSON containing the selected provider and model. A future Hermes integration can consume that decision and start a lane-specific session or apply a model override.
+The output is JSON containing the selected provider and model. The repository now also includes a native Hermes plugin and an optional Hermes Desktop pane.
 
 With `--ask`, the router presents the proposed destination and defaults to **deny**. The MVP does not edit Hermes configuration, restart the gateway, or switch a live session. An integration must perform that side effect only after receiving `approved: true`.
 
@@ -54,6 +54,49 @@ The session switch contract is deliberately fail-closed:
 5. Re-read `session.status` and verify the actual active provider/model.
 
 The adapter never adds `--global`, never writes Hermes configuration, never retries a failed mutation automatically, and surfaces the prompt-cache reset as a user-visible approval consequence. See `hermes_router.session_switch` and `hermes_router.tui_gateway`.
+
+## Hermes plugin
+
+The native plugin exposes three proposal-only surfaces:
+
+- Tool: `route_model`
+- Slash command: `/route [--kind KIND] [--budget COST] -- <task>`
+- CLI command: `hermes model-router [--kind KIND] [--budget COST] <task>`
+
+Every surface classifies locally and returns an explainable route. The native plugin itself is deliberately side-effect free: it never switches a session, submits the task, reads credentials, or changes global configuration.
+
+Validate a checkout with Hermes' real plugin loader:
+
+```bash
+hermes plugins doctor . --ci
+```
+
+Install without enabling:
+
+```bash
+hermes plugins install LaithAskar/hermes-model-router --no-enable
+```
+
+Then explicitly enable it when ready:
+
+```bash
+hermes plugins enable hermes-model-router
+```
+
+Plugin installation/enabling changes the local Hermes plugin configuration and may require a new Hermes session. Review the source and command before doing so.
+
+## Optional Hermes Desktop pane
+
+`desktop/plugin.js` adds a **Model Router** pane with a two-step flow:
+
+1. **Propose route** — reads the active session status and asks the native `/route` command for a local proposal.
+2. **Approve and switch** — revalidates the exact session/provider/model snapshot, invokes only `/model <model> --provider <provider> --session`, then verifies the new active route.
+
+The pane is disabled by default. It fails closed if the session is busy or stale, never uses `--global`, never submits the task automatically, and leaves Hermes' native fallback chain unchanged. It requires the native plugin to be enabled first.
+
+The desktop file is shipped in Hermes' unified-package layout, so a native plugin installation places it under `~/.hermes/plugins/hermes-model-router/desktop/plugin.js` where Hermes Desktop can discover it. It remains disabled by default until the user enables it in **Settings → Plugins**.
+
+> The plugin does not intercept every prompt or silently route it. Automatic interception would weaken the exact, user-visible approval boundary. Routing remains an explicit propose → approve → verified session switch.
 
 ## Recommended architecture
 
@@ -83,7 +126,7 @@ Model IDs, availability, pricing, and provider access change. Do not treat these
 ## Roadmap
 
 - YAML/TOML profile configuration
-- Native Hermes plugin or wrapper integration
+- Native plugin packaging and a desktop approval pane
 - Provider capability discovery and live pricing adapters
 - Usage feedback: success rate, latency, and cost per task class
 - Privacy-preserving local routing history
@@ -95,6 +138,8 @@ Model IDs, availability, pricing, and provider access change. Do not treat these
 ```bash
 python3 -m unittest discover -s tests -v
 python3 -m py_compile hermes_router/*.py
+node --check desktop/plugin.js
+hermes plugins doctor . --ci
 ```
 
 ## License
@@ -103,7 +148,7 @@ MIT
 
 ## Status
 
-Early public MVP. It selects and explains a route; it does not yet alter Hermes sessions automatically. Contributions and provider-specific adapters are welcome.
+Public plugin MVP. The native plugin selects and explains routes without side effects; the optional desktop pane can perform an explicitly approved, stale-checked, session-only switch. It never silently intercepts prompts or changes global Hermes configuration.
 
 > Never commit API keys, OAuth tokens, cookies, private Hermes config, or personal data.
 

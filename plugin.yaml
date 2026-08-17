@@ -1,0 +1,11 @@
+name: hermes-model-router
+version: 0.2.0
+description: "Cost-aware, explainable model routing with explicit session-only approval."
+author: "Laith Askar"
+manifest_version: 2
+api_version: 1
+license: MIT
+homepage: https://github.com/LaithAskar/hermes-model-router
+tags: [models, routing, cost, privacy, approval]
+provides_tools:
+  - route_model
