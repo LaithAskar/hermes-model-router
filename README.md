@@ -36,7 +36,24 @@ The output is JSON containing the selected provider and model. A future Hermes i
 
 With `--ask`, the router presents the proposed destination and defaults to **deny**. The MVP does not edit Hermes configuration, restart the gateway, or switch a live session. An integration must perform that side effect only after receiving `approved: true`.
 
-The first execution adapter is intentionally conservative: after approval it starts a **new bounded `hermes chat` process** with an argv list (`shell=False`). It does not rewrite `~/.hermes/config.yaml` and does not hot-swap an existing conversation. Native live-session switching is a later adapter using Hermes' TUI gateway `command.dispatch` protocol, with the same approval gate.
+The first execution adapter is intentionally conservative: after approval it starts a **new bounded `hermes chat` process** with an argv list (`shell=False`). It does not rewrite `~/.hermes/config.yaml` and does not hot-swap an existing conversation. Native live-session switching is available as a separate Phase 2 adapter using Hermes' authenticated TUI gateway protocol, with the same fail-closed approval boundary.
+
+## Native session switching
+
+The library also provides a Phase 2 adapter for an **already-authorized Hermes TUI gateway connection**. The caller owns endpoint discovery and authentication; this project does not read dashboard tokens, OAuth credentials, `.env`, or private Hermes configuration.
+
+The session switch contract is deliberately fail-closed:
+
+1. Bind approval to the exact route, session ID, current provider/model, and `session` scope.
+2. Re-read `session.status` immediately before switching.
+3. Refuse inactive, busy, or stale sessions.
+4. Invoke Hermes' native session-only command through `slash.exec`:
+   ```text
+   /model <model> --provider <provider> --session
+   ```
+5. Re-read `session.status` and verify the actual active provider/model.
+
+The adapter never adds `--global`, never writes Hermes configuration, never retries a failed mutation automatically, and surfaces the prompt-cache reset as a user-visible approval consequence. See `hermes_router.session_switch` and `hermes_router.tui_gateway`.
 
 ## Recommended architecture
 
