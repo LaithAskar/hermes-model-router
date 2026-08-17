@@ -48,7 +48,8 @@ class RouterTests(unittest.TestCase):
     def test_denied_route_never_runs_hermes(self):
         d = self.router.route("Fix a bug", TaskKind.CODING)
         calls = []
-        result = run_approved(d, "Fix a bug", approved=False, hermes_bin="/usr/bin/hermes", runner=lambda *a, **k: calls.append(a))
+        approval = request_approval(d, "nous", "google/gemini-3.7-flash", input_fn=lambda _: "")
+        result = run_approved(d, "Fix a bug", approval=approval, hermes_bin="/usr/bin/hermes", runner=lambda *a, **k: calls.append(a))
         self.assertFalse(result.approved)
         self.assertEqual(calls, [])
 
@@ -66,10 +67,18 @@ class RouterTests(unittest.TestCase):
             seen["kwargs"] = kwargs
             return Completed()
 
-        result = run_approved(d, "Fix a bug; do not execute shell", approved=True, hermes_bin="/usr/bin/hermes", runner=fake_runner)
+        approval = request_approval(d, "nous", "google/gemini-3.7-flash", input_fn=lambda _: "yes")
+        result = run_approved(d, "Fix a bug; do not execute shell", approval=approval, hermes_bin="/usr/bin/hermes", runner=fake_runner)
         self.assertEqual(result.returncode, 0)
         self.assertEqual(seen["command"][0], "/usr/bin/hermes")
         self.assertFalse(seen["kwargs"].get("shell", False))
+
+    def test_approval_cannot_be_reused_for_different_route(self):
+        first = self.router.route("Fix a bug", TaskKind.CODING)
+        second = self.router.route("Research sources", TaskKind.RESEARCH)
+        approval = request_approval(first, input_fn=lambda _: "yes")
+        with self.assertRaises(ValueError):
+            run_approved(second, "Research sources", approval=approval, hermes_bin="/usr/bin/hermes")
 
 
 if __name__ == "__main__":

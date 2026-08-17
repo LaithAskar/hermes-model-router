@@ -26,6 +26,7 @@ def main() -> None:
         "reason": decision.reason,
     }
     approved = True
+    approval = None
     if args.ask:
         approval = request_approval(decision, args.current_provider, args.current_model)
         approved = approval.approved
@@ -36,7 +37,9 @@ def main() -> None:
     if args.run and not args.ask:
         parser.error("--run requires --ask; Hermes execution is approval-gated")
     if args.run and approved:
-        execution = run_approved(decision, args.task, approved=True)
+        if approval is None:
+            raise RuntimeError("approval result missing")
+        execution = run_approved(decision, args.task, approval=approval)
         result["execution"] = {
             "returncode": execution.returncode,
             "stdout": execution.stdout,
