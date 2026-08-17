@@ -57,6 +57,15 @@ class TuiGatewayTransportTests(unittest.TestCase):
         with self.assertRaisesRegex(SessionSwitchError, "busy"):
             TuiGatewayTransport(socket).switch_session_model("s1", "nous", "google/gemini-3.7-flash")
 
+    def test_option_injection_in_provider_or_model_is_rejected(self):
+        socket = FakeSocket([])
+        transport = TuiGatewayTransport(socket)
+        with self.assertRaisesRegex(ValueError, "unsafe provider"):
+            transport.switch_session_model("s1", "nous --global", "safe-model")
+        with self.assertRaisesRegex(ValueError, "unsafe model"):
+            transport.switch_session_model("s1", "nous", "safe-model --global")
+        self.assertEqual(socket.sent, [])
+
 
 if __name__ == "__main__":
     unittest.main()

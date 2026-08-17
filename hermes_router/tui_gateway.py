@@ -5,6 +5,7 @@ import re
 import time
 from typing import Any, Callable, Optional
 
+from .hermes import _validate_model_value
 from .session_switch import SessionSnapshot, SessionSwitchError
 
 
@@ -69,6 +70,8 @@ class TuiGatewayTransport:
         )
 
     def switch_session_model(self, session_id: str, provider: str, model: str) -> dict:
+        provider = _validate_model_value(provider, "provider")
+        model = _validate_model_value(model, "model")
         response = self._rpc(
             "slash.exec",
             {
