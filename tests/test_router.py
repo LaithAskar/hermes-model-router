@@ -1,5 +1,6 @@
 import unittest
 
+from hermes_router.approval import request_approval
 from hermes_router.router import Router, TaskKind, classify, default_profiles
 
 
@@ -30,6 +31,18 @@ class RouterTests(unittest.TestCase):
     def test_budget_changes_preference(self):
         d = self.router.route("Do a general task", TaskKind.GENERAL, budget=0.5)
         self.assertNotEqual(d.profile.model, "gpt-5.6-sol")
+
+    def test_approval_accepts_yes(self):
+        d = self.router.route("Fix a bug", TaskKind.CODING)
+        result = request_approval(d, "nous", "google/gemini-3.7-flash", input_fn=lambda _: "yes")
+        self.assertTrue(result.approved)
+        self.assertIn("switch approved", result.message)
+
+    def test_approval_defaults_to_deny(self):
+        d = self.router.route("Research sources", TaskKind.RESEARCH)
+        result = request_approval(d, "openai-codex", "gpt-5.6-sol", input_fn=lambda _: "")
+        self.assertFalse(result.approved)
+        self.assertIn("staying on", result.message)
 
 
 if __name__ == "__main__":

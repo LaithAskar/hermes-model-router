@@ -23,9 +23,18 @@ A single “best model” is usually wasteful. Frontier reasoning is valuable fo
 python3 -m hermes_router.cli "Fix the authentication bug and add tests"
 python3 -m hermes_router.cli "Research current papers and compare sources" --kind research
 python3 -m hermes_router.cli "Summarize these notes" --budget 0.50
+
+# Ask before accepting a proposed switch; blank/anything other than yes denies.
+python3 -m hermes_router.cli \
+  "Fix the authentication bug" \
+  --ask \
+  --current-provider nous \
+  --current-model google/gemini-3.7-flash
 ```
 
 The output is JSON containing the selected provider and model. A future Hermes integration can consume that decision and start a lane-specific session or apply a model override.
+
+With `--ask`, the router presents the proposed destination and defaults to **deny**. The MVP does not edit Hermes configuration, restart the gateway, or switch a live session. An integration must perform that side effect only after receiving `approved: true`.
 
 ## Recommended architecture
 
