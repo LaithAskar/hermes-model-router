@@ -74,7 +74,7 @@ These are the profiles tested against the author's setup and must be customized 
 
 - Coding: OpenAI Codex / `gpt-5.6-sol`
 - Research: Nous / `google/gemini-3.7-flash`
-- Daily: Nous / `deepseek/deepseek-v4-flash-20260731`
+- Daily: Nous / `deepseek/deepseek-v4-flash-0731`
 - Deeper review: Nous / `deepseek/deepseek-v4-pro-20260813`
 - Backup: Kimi / `kimi-k3`
 

@@ -19,7 +19,7 @@ class RouterTests(unittest.TestCase):
 
     def test_daily_prefers_deepseek_flash(self):
         d = self.router.route("Summarize these notes into a checklist", TaskKind.DAILY)
-        self.assertEqual(d.profile.model, "deepseek/deepseek-v4-flash-20260731")
+        self.assertEqual(d.profile.model, "deepseek/deepseek-v4-flash-0731")
 
     def test_classifier_is_conservative(self):
         kind, confidence = classify("Please fix this repository bug")

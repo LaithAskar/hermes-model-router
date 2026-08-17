@@ -91,6 +91,6 @@ def default_profiles() -> List[ModelProfile]:
         ModelProfile("openai-codex", "gpt-5.6-sol", frozenset({"coding", "high_stakes", "general"}), 35.0, .98, .72),
         ModelProfile("nous", "google/gemini-3.7-flash", frozenset({"research", "general", "coding"}), 3.75, .88, .90),
         ModelProfile("nous", "deepseek/deepseek-v4-pro-20260813", frozenset({"research", "high_stakes", "general"}), 3.17, .90, .76),
-        ModelProfile("nous", "deepseek/deepseek-v4-flash-20260731", frozenset({"daily", "general", "research"}), .22, .72, .98),
+        ModelProfile("nous", "deepseek/deepseek-v4-flash-0731", frozenset({"daily", "general", "research"}), .22, .72, .98),
         ModelProfile("kimi-coding", "kimi-k3", frozenset({"coding", "research", "general"}), 0.0, .84, .76),
     ]
