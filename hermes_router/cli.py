@@ -25,7 +25,7 @@ def main() -> None:
         "confidence": decision.confidence,
         "reason": decision.reason,
     }
-    approved = True
+    approved = False
     approval = None
     if args.ask:
         approval = request_approval(decision, args.current_provider, args.current_model)
