@@ -28,6 +28,7 @@ class DesktopPluginContractTests(unittest.TestCase):
 
     def test_revalidates_before_and_after_switch(self):
         self.assertIn("host.state.focusedSessionId", self.source)
+        self.assertGreaterEqual(self.source.count("host.state.focusedSessionId.get()"), 2)
         self.assertGreaterEqual(self.source.count("readSession(sessionId)"), 3)
         self.assertIn("Approval is stale: the active session changed.", self.source)
         self.assertIn("Approval is stale: the active provider or model changed.", self.source)

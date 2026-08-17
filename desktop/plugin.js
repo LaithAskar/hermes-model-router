@@ -67,7 +67,7 @@ function sameSnapshot(left, right) {
 }
 
 function RouterPane() {
-  const activeSessionId = useValue(host.state.focusedSessionId)
+  const focusedSessionId = useValue(host.state.focusedSessionId)
   const activeModel = useValue(host.state.model)
   const [task, setTask] = useState('')
   const [budget, setBudget] = useState('')
@@ -78,7 +78,7 @@ function RouterPane() {
   const [result, setResult] = useState('')
 
   const propose = async () => {
-    const sessionId = String(activeSessionId || '')
+    const sessionId = String(host.state.focusedSessionId.get() || '')
     if (!sessionId) {
       setError('Open a Hermes session before routing a task.')
       return
@@ -118,7 +118,7 @@ function RouterPane() {
     setError('')
     setResult('')
     try {
-      const sessionId = String(activeSessionId || '')
+      const sessionId = String(host.state.focusedSessionId.get() || '')
       if (!sessionId || sessionId !== expected.sessionId) {
         throw new Error('Approval is stale: the active session changed.')
       }
@@ -194,7 +194,7 @@ function RouterPane() {
         }
       }),
       jsx(Button, {
-        disabled: busy || !task.trim() || !activeSessionId,
+        disabled: busy || !task.trim() || !focusedSessionId,
         onClick: propose,
         children: busy ? jsxs('span', { className: 'flex items-center gap-2', children: [jsx(GlyphSpinner, { spinner: 'breathe' }), 'Checking…'] }) : 'Propose route'
       }),
